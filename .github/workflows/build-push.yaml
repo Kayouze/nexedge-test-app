@@ -48,7 +48,6 @@ jobs:
  
   deploy-to-gke:
     name: deploy-manifests
-    needs: modifygit
     runs-on: ubuntu-latest
     
     steps:
