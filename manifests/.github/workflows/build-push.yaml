@@ -1,0 +1,83 @@
+name: Build and Push Docker Image to Google artifactory registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+          export_default_credentials: true
+       
+      - name: Configure gcloud project
+        run: |
+          echo "Setting default project ID..."
+          gcloud config set project ${{ secrets.GCLOUD_PROJECT_ID }}
+
+      - name: Configure Docker
+        run: |
+          echo "Authenticating Docker with Google Cloud..."
+          gcloud auth configure-docker us-central-docker.pkg.dev
+      - name: Build Docker image
+        run: docker build -t us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/test-app-repo/ test-app:latest .
+
+      - name: Push Docker image to Google artifact registry
+        run: docker push us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/test-app-repo/ test-app:latest
+
+      - name: Install GKE gcloud Authentication Plugin
+        run: |
+          gcloud components install kubectl
+  
+      - name: Set KUBECONFIG
+        run: |
+            echo "Setting KUBECONFIG..."
+            gcloud container clusters get-credentials kayode-cluster --region=us-central --project=${{ secrets.GCLOUD_PROJECT_ID }}
+ 
+  deploy-to-gke:
+    name: deploy-manifests
+    needs: modifygit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+          export_default_credentials: true
+       
+      - name: Configure gcloud project
+        run: |
+          echo "Setting default project ID..."
+          gcloud config set project ${{ secrets.GCLOUD_PROJECT_ID }}
+
+      - name: Install GKE gcloud Authentication Plugin
+        run: |
+          gcloud components install kubectl
+  
+      - name: Set KUBECONFIG
+        run: |
+            echo "Setting KUBECONFIG..."
+            gcloud container clusters get-credentials test-cluster --region=europe-west3 --project=${{ secrets.GCLOUD_PROJECT_ID }}
+      - name: Apply Kubernetes manifests
+        run: |
+          echo "Applying Kubernetes manifests..."
+          kubectl apply -f manifests/deployment.yaml
+          kubectl apply -f manifests/service.yaml
+          kubectl apply -f manifests/ingress.yaml

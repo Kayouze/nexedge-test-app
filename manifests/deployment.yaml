@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: test-container
-        image: us-central1-docker.pkg.dev/kayuze1st/test-app/test-app/latest:latest
+        image: us-central1-docker.pkg.dev/kayuze1st/test-app-repo/test-app:latest
         ports:
         - containerPort: 80
