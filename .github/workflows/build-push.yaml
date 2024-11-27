@@ -32,10 +32,10 @@ jobs:
           echo "Authenticating Docker with Google Cloud..."
           gcloud auth configure-docker us-central-docker.pkg.dev
       - name: Build Docker image
-        run: docker build -t us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/test-app-repo/ test-app:latest .
+        run: docker build -t us-central1-docker.pkg.dev/kayuze1st/test-app-repo/test-app:latest .
 
       - name: Push Docker image to Google artifact registry
-        run: docker push us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/test-app-repo/ test-app:latest
+        run: docker push us-central1-docker.pkg.dev/kayuze1st/test-app-repo/test-app:latest
 
       - name: Install GKE gcloud Authentication Plugin
         run: |
@@ -44,7 +44,7 @@ jobs:
       - name: Set KUBECONFIG
         run: |
             echo "Setting KUBECONFIG..."
-            gcloud container clusters get-credentials kayode-cluster --region=us-central --project=${{ secrets.GCLOUD_PROJECT_ID }}
+            gcloud container clusters get-credentials kayus-cluster-1 --zone us-central1-c --project kayuze1st
  
   deploy-to-gke:
     name: deploy-manifests
@@ -73,7 +73,7 @@ jobs:
       - name: Set KUBECONFIG
         run: |
             echo "Setting KUBECONFIG..."
-            gcloud container clusters get-credentials test-cluster --region=europe-west3 --project=${{ secrets.GCLOUD_PROJECT_ID }}
+            gcloud container clusters get-credentials kayus-cluster-1 --zone us-central1-c --project kayuze1st
       - name: Apply Kubernetes manifests
         run: |
           echo "Applying Kubernetes manifests..."
