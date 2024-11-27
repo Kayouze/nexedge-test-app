@@ -30,7 +30,7 @@ jobs:
       - name: Configure Docker
         run: |
           echo "Authenticating Docker with Google Cloud..."
-          gcloud auth configure-docker us-central-docker.pkg.dev
+          gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build Docker image
         run: docker build -t us-central1-docker.pkg.dev/kayuze1st/test-app-repo/test-app:latest .
